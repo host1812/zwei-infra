@@ -5,7 +5,7 @@ param(
     [string]$Step
 )
 
-$Steps = @('network','logsAnalytics','appInsights','managedIdentity')
+$Steps = @("network","logsAnalytics","appInsights","managedIdentity","keyvault")
 
 function New-StepDeployment {
     param(
@@ -18,7 +18,7 @@ function New-StepDeployment {
 
 New-AzResourceGroup -Name rg-ServiceX -Location eastus -Force
 
-if ($Step -eq '') {
+if ($Step -eq "") {
     Write-Host "Deploying all steps..."
     foreach ($Step in $Steps) {
         New-StepDeployment -Step $Step
