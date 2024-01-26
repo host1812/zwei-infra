@@ -11,7 +11,8 @@ $Steps = @(
     "appInsights",
     "managedIdentity",
     "keyVault",
-    "appConfig"
+    "appConfig",
+    "appService"
 )
 
 function New-StepDeployment {
