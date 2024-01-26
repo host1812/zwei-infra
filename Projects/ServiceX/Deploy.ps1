@@ -1,4 +1,4 @@
 # How to deploy project
 
-New-AzResourceGroup -Name rg-ServiceX -Location eastus
-New-AzResourceGroupDeployment -ResourceGroupName rg-ServiceX -TemplateFile Bicep/network.bicep -ParameterFile ./Parameters/network.parameters.json
+New-AzResourceGroup -Name rg-ServiceX -Location eastus -Force
+New-AzResourceGroupDeployment -Verbose -ResourceGroupName rg-ServiceX -TemplateFile $PSScriptRoot/Bicep/network.bicep -TemplateParameterFile $PSScriptRoot/Parameters/network.parameters.jsonc

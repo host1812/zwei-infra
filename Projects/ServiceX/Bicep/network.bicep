@@ -9,13 +9,5 @@ module virtualNetwork '../../../bicep-registry-modules/modules/network/virtual-n
     addressPrefixes: [
       '10.0.0.0/16'
     ]
-    subnets: [
-      {
-        name: 'main-${serviceName}'
-        properties: {
-          addressPrefix: '10.0.2.0/24'
-        }
-      }
-    ]
   }
 }
