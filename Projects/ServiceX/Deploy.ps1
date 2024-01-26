@@ -5,7 +5,14 @@ param(
     [string]$Step
 )
 
-$Steps = @("network","logsAnalytics","appInsights","managedIdentity","keyvault")
+$Steps = @(
+    "network",
+    "logsAnalytics",
+    "appInsights",
+    "managedIdentity",
+    "keyVault",
+    "appConfig"
+)
 
 function New-StepDeployment {
     param(
