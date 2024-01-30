@@ -13,3 +13,8 @@ This is Bicep project.
 1. Select stack on app service
 2. Enable diagnostics settings
 3. Add managed identity to app service
+
+### Certificate
+
+1. Need to give myself 'Key Vault Certificates Officer' role
+2. Generate self-signed cert
