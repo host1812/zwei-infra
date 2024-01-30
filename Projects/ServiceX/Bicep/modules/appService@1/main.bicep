@@ -10,27 +10,6 @@ The location in which the resource(s) will be created.
 param location string
 
 @sys.description('''
-A map of tags to attach.
-''')
-param tags object = {}
-
-@sys.description('''
-Private endpoint configuration.
-```
-{
-  baseName: string
-  virtualNetworkName: string
-  virtualNetworkLocation: string (optional
-  virtualNetworkSubnetName: string
-  virtualNetworkResourceGroupName: string
-  privateDnsZoneResourceGroupName: string
-}
-```
-''')
-param privateEndpoint object = {}
-param vnetInjection object = {}
-
-@sys.description('''
 Health check URL for the web app.
 ''')
 param healthCheckPath string = '/'
@@ -124,7 +103,6 @@ param use32BitWorkerProcess bool = false
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: 'asp-${baseName}'
   location: location
-  tags: tags
   properties: {
     reserved: kind == 'linux' ? true : false // according to documentation, should be false for windows, true for linux
     zoneRedundant: zoneRedundant
@@ -137,7 +115,6 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
 resource appService 'Microsoft.Web/sites@2022-03-01' = {
   name: 'app-${baseName}'
   location: location
-  tags: tags
   kind: 'app'
   identity: (empty(identity) ? null : {
     type: identity.type
@@ -171,12 +148,6 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
       alwaysOn: true
       detailedErrorLoggingEnabled: true
     }
-    virtualNetworkSubnetId: resourceId(
-      vnetInjection.virtualNetworkResourceGroupName,
-      'Microsoft.Network/virtualNetworks/subnets',
-      vnetInjection.virtualNetworkName,
-      vnetInjection.virtualNetworkSubnetName
-    )
   }
 }
 
@@ -185,49 +156,6 @@ resource appServiceSettings 'Microsoft.Web/sites/config@2022-03-01' = {
   kind: 'string'
   parent: appService
   properties: appServiceProperties
-}
-
-resource appServiceVirtualNetworkConnection 'Microsoft.Web/sites/virtualNetworkConnections@2022-03-01' = {
-  name: 'vnc-app-${baseName}'
-  parent: appService
-  properties: {
-    isSwift: true
-    vnetResourceId: resourceId(vnetInjection.virtualNetworkResourceGroupName, 'Microsoft.Network/virtualNetworks', vnetInjection.virtualNetworkName)
-  }
-}
-
-resource appServicePrivateEndpoint 'Microsoft.Network/privateEndpoints@2022-05-01' = if (!empty(privateEndpoint)) {
-  name: 'pe-app-${baseName}'
-  location: location
-  properties: {
-    privateLinkServiceConnections: [
-      {
-        name: 'plsc-pe-app-${baseName}'
-        properties: {
-          groupIds: [ 'sites' ]
-          privateLinkServiceId: appService.id
-        }
-      }
-    ]
-    subnet: {
-      id: resourceId(privateEndpoint.virtualNetworkResourceGroupName, 'Microsoft.Network/virtualNetworks/subnets', privateEndpoint.virtualNetworkName, privateEndpoint.virtualNetworkSubnetName)
-    }
-  }
-}
-
-resource appServicePrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2022-05-01' = if (!empty(privateEndpoint)) {
-  name: 'pdzg-pe-app-${baseName}'
-  parent: appServicePrivateEndpoint
-  properties: {
-    privateDnsZoneConfigs: [
-      {
-        name: 'pdsc-pe-app-${baseName}'
-        properties: {
-          privateDnsZoneId: resourceId(privateEndpoint.privateDnsZoneResourceGroupName, 'Microsoft.Network/privateDnsZones', 'privatelink.azurewebsites.net')
-        }
-      }
-    ]
-  }
 }
 
 resource appServiceDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (diagnosticSettings.enabled) {

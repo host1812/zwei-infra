@@ -1,9 +1,9 @@
 param serviceName string = 'servicex'
 param location string
 
-resource analyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
-  name: 'law-${serviceName}-${location}'
-}
+// resource analyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
+//   name: 'law-${serviceName}-${location}'
+// }
 
 // module serverFarm '../../../ResourceModules/modules/web/serverfarm/main.bicep' = {
 //   name: 'serverFarms--${uniqueString(deployment().name, location)}-${serviceName}-${location}'
@@ -26,9 +26,6 @@ resource analyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01
 //     serverFarmResourceId: serverFarm.outputs.resourceId
 //   }
 // }
-
-param realmName string
-param realmLocation string = resourceGroup().location
 
 // Diagnostic settings
 param diagnosticSettingsLogCategories array = [
@@ -97,24 +94,18 @@ module appService 'modules/appService@1/main.bicep' = {
           enabled: false
         }
       }]
-      workspaceId: analyticsWorkspace.id
+      // workspaceId: analyticsWorkspace.id
     }
-    // appServiceProperties: {
+    appServiceProperties: {
 
-    //   // This is minimal configuration needed for VGSputnik injected.
-    //   // All other properties will come from app config (including secrets).
-    //   // Example: https://appcs-vgdev.azconfig.io
-    //   VGSPUTNIK_APPCONFIG__URI: 'https://appcs-${realmName}.azconfig.io/'
-    //   VGSPUTNIK_APPCONFIG__LABEL: 'vgsputnik'
+      // This is minimal configuration needed for VGSputnik injected.
+      // All other properties will come from app config (including secrets).
+      // Example: https://appcs-vgdev.azconfig.io
+      SERVICEX_APPCONFIG__URI: 'https://appcs-${serviceName}.azconfig.io/'
+      SERVICEX_APPCONFIG__LABEL: 'servicex'
 
-    //   // Take first identity as a default.
-    //   AZURE_CLIENT_ID:  reference(
-    //       resourceId(union({
-    //             subscriptionId: subscription().subscriptionId
-    //           }, userAssignedIdentities[0]).subscriptionId, union({
-    //             resourceGroupName: resourceGroup().name
-    //           }, userAssignedIdentities[0]).resourceGroupName, 'Microsoft.ManagedIdentity/userAssignedIdentities', userAssignedIdentities[0].name), '2022-01-31-preview'
-    //     ).clientId
-    // }
+      // Take first identity as a default.
+      AZURE_CLIENT_ID: 'XX-YY'
+    }
   }
 }

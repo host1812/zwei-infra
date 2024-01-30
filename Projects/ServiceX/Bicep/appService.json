@@ -1,0 +1,310 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.24.24.22086",
+      "templateHash": "7408078255808734900"
+    }
+  },
+  "parameters": {
+    "serviceName": {
+      "type": "string",
+      "defaultValue": "servicex"
+    },
+    "location": {
+      "type": "string"
+    },
+    "diagnosticSettingsLogCategories": {
+      "type": "array",
+      "defaultValue": [
+        "AppServiceHTTPLogs",
+        "AppServiceConsoleLogs",
+        "AppServiceAppLogs",
+        "AppServiceAuditLogs",
+        "AppServicePlatformLogs"
+      ]
+    },
+    "diagnosticSettingsMetricCategories": {
+      "type": "array",
+      "defaultValue": [
+        "AllMetrics"
+      ]
+    },
+    "zoneRedundant": {
+      "type": "bool",
+      "defaultValue": false
+    },
+    "capacity": {
+      "type": "int",
+      "defaultValue": 1
+    },
+    "perSiteScaling": {
+      "type": "bool",
+      "defaultValue": false
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}-{1}', parameters('serviceName'), parameters('location'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "baseName": {
+            "value": "[format('{0}-{1}', parameters('serviceName'), parameters('location'))]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "netFrameworkVersion": {
+            "value": "v8.0"
+          },
+          "sku": {
+            "value": {
+              "name": "S1",
+              "tier": "Standard",
+              "size": "S1",
+              "family": "S",
+              "capacity": "[parameters('capacity')]"
+            }
+          },
+          "kind": {
+            "value": "windows"
+          },
+          "zoneRedundant": {
+            "value": "[parameters('zoneRedundant')]"
+          },
+          "perSiteScaling": {
+            "value": "[parameters('perSiteScaling')]"
+          },
+          "healthCheckPath": {
+            "value": "/"
+          },
+          "diagnosticSettings": {
+            "value": {
+              "copy": [
+                {
+                  "name": "logs",
+                  "count": "[length(parameters('diagnosticSettingsLogCategories'))]",
+                  "input": {
+                    "category": "[parameters('diagnosticSettingsLogCategories')[copyIndex('logs')]]",
+                    "enabled": true,
+                    "retentionPolicy": {
+                      "days": 0,
+                      "enabled": false
+                    }
+                  }
+                },
+                {
+                  "name": "metrics",
+                  "count": "[length(parameters('diagnosticSettingsMetricCategories'))]",
+                  "input": {
+                    "category": "[parameters('diagnosticSettingsMetricCategories')[copyIndex('metrics')]]",
+                    "enabled": true,
+                    "retentionPolicy": {
+                      "days": 0,
+                      "enabled": false
+                    }
+                  }
+                }
+              ],
+              "enabled": "[or(not(empty(parameters('diagnosticSettingsLogCategories'))), not(empty(parameters('diagnosticSettingsMetricCategories'))))]"
+            }
+          },
+          "appServiceProperties": {
+            "value": {
+              "SERVICEX_APPCONFIG__URI": "[format('https://appcs-{0}.azconfig.io/', parameters('serviceName'))]",
+              "SERVICEX_APPCONFIG__LABEL": "servicex",
+              "AZURE_CLIENT_ID": "XX-YY"
+            }
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.24.24.22086",
+              "templateHash": "15630680697190027829"
+            }
+          },
+          "parameters": {
+            "baseName": {
+              "type": "string",
+              "metadata": {
+                "description": "The 'base' name; used when creating resource(s).\r\n`app-{baseName}`\r\n"
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "The location in which the resource(s) will be created.\r\n"
+              }
+            },
+            "healthCheckPath": {
+              "type": "string",
+              "defaultValue": "/",
+              "metadata": {
+                "description": "Health check URL for the web app.\r\n"
+              }
+            },
+            "appServiceProperties": {
+              "type": "object",
+              "defaultValue": {}
+            },
+            "linuxFxVersion": {
+              "type": "string",
+              "defaultValue": ""
+            },
+            "identity": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "The identity for the virtual machine scale set.\r\n```\r\n{\r\n  type: string (one of `['None', 'SystemAssigned', 'SystemAssigned, UserAssigned', 'UserAssigned'`)\r\n  userAssignedIdentities: object[{\r\n    id: string\r\n    principalId: string\r\n    clientId: string\r\n  }]\r\n}\r\n```\r\n"
+              }
+            },
+            "acrManagedIdentityClientId": {
+              "type": "string",
+              "defaultValue": ""
+            },
+            "diagnosticSettings": {
+              "type": "object",
+              "defaultValue": {
+                "enabled": false
+              },
+              "metadata": {
+                "description": "Diagnostic settings to apply to the MySQL Flexible Server instance.\r\n```\r\n{\r\n  enabled: bool\r\n  logs: object[{\r\n    category: string\r\n    enabled: bool\r\n    retentionPolicy: {\r\n      days: int\r\n      enabled: bool\r\n    }\r\n  }]\r\n  metrics: object[{\r\n    category: string\r\n    enabled: bool\r\n    retentionPolicy: {\r\n      days: int\r\n      enabled: bool\r\n    }\r\n    timeGrain: string\r\n  }]\r\n  storageAccountId: string\r\n  workspaceId: string\r\n}\r\n```\r\n"
+              }
+            },
+            "zoneRedundant": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Enables zone redundancy for the App Service Plan. This is inmutable property and can't be changed after the App Service Plan is created.\r\n"
+              }
+            },
+            "perSiteScaling": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Allows to control if we want to scale each web app individually or scale all of them together.\r\nIf enabled, numberOfWorkers in web site defines instance count for each web app.\r\n"
+              }
+            },
+            "kind": {
+              "type": "string",
+              "defaultValue": "linux",
+              "allowedValues": [
+                "windows",
+                "linux"
+              ],
+              "metadata": {
+                "description": "Kind for App Service Plan.\r\n"
+              }
+            },
+            "sku": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "The identity for the virtual machine scale set.\r\n```\r\n{\r\n  name: string\r\n  tier: string\r\n  capacity: int\r\n}\r\n```\r\n"
+              }
+            },
+            "netFrameworkVersion": {
+              "type": "string",
+              "defaultValue": ""
+            },
+            "use32BitWorkerProcess": {
+              "type": "bool",
+              "defaultValue": false
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2022-03-01",
+              "name": "[format('asp-{0}', parameters('baseName'))]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "reserved": "[if(equals(parameters('kind'), 'linux'), true(), false())]",
+                "zoneRedundant": "[parameters('zoneRedundant')]",
+                "perSiteScaling": "[parameters('perSiteScaling')]"
+              },
+              "sku": "[parameters('sku')]",
+              "kind": "app"
+            },
+            {
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2022-03-01",
+              "name": "[format('app-{0}', parameters('baseName'))]",
+              "location": "[parameters('location')]",
+              "kind": "app",
+              "identity": "[if(empty(parameters('identity')), null(), createObject('type', parameters('identity').type, 'userAssignedIdentities', if(or(not(contains(parameters('identity'), 'userAssignedIdentities')), empty(parameters('identity').userAssignedIdentities)), null(), reduce(parameters('identity').userAssignedIdentities, createObject(), lambda('x', 'y', union(lambdaVariables('x'), createObject(format('{0}', lambdaVariables('y').id), createObject())))))))]",
+              "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', format('asp-{0}', parameters('baseName')))]",
+                "httpsOnly": true,
+                "siteConfig": {
+                  "metadata": "[if(equals(parameters('kind'), 'windows'), createArray(createObject('name', 'CURRENT_STACK', 'value', 'dotnet')), null())]",
+                  "use32BitWorkerProcess": "[parameters('use32BitWorkerProcess')]",
+                  "netFrameworkVersion": "[if(not(empty(parameters('netFrameworkVersion'))), parameters('netFrameworkVersion'), null())]",
+                  "linuxFxVersion": "[if(not(empty(parameters('linuxFxVersion'))), parameters('linuxFxVersion'), null())]",
+                  "healthCheckPath": "[parameters('healthCheckPath')]",
+                  "ftpsState": "Disabled",
+                  "acrUseManagedIdentityCreds": "[if(not(empty(parameters('acrManagedIdentityClientId'))), true(), false())]",
+                  "acrUserManagedIdentityID": "[if(not(empty(parameters('acrManagedIdentityClientId'))), parameters('acrManagedIdentityClientId'), null())]",
+                  "cors": {
+                    "allowedOrigins": [
+                      "*"
+                    ]
+                  },
+                  "alwaysOn": true,
+                  "detailedErrorLoggingEnabled": true
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', format('asp-{0}', parameters('baseName')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Web/sites/config",
+              "apiVersion": "2022-03-01",
+              "name": "[format('{0}/{1}', format('app-{0}', parameters('baseName')), 'appsettings')]",
+              "kind": "string",
+              "properties": "[parameters('appServiceProperties')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', format('app-{0}', parameters('baseName')))]"
+              ]
+            },
+            {
+              "condition": "[parameters('diagnosticSettings').enabled]",
+              "type": "Microsoft.Insights/diagnosticSettings",
+              "apiVersion": "2021-05-01-preview",
+              "scope": "[format('Microsoft.Web/sites/{0}', format('app-{0}', parameters('baseName')))]",
+              "name": "[format('diag-{0}', format('app-{0}', parameters('baseName')))]",
+              "properties": {
+                "logs": "[if(contains(parameters('diagnosticSettings'), 'logs'), parameters('diagnosticSettings').logs, createArray())]",
+                "metrics": "[if(contains(parameters('diagnosticSettings'), 'metrics'), parameters('diagnosticSettings').metrics, createArray())]",
+                "storageAccountId": "[if(contains(parameters('diagnosticSettings'), 'storageAccountId'), parameters('diagnosticSettings').storageAccountId, null())]",
+                "workspaceId": "[if(contains(parameters('diagnosticSettings'), 'workspaceId'), parameters('diagnosticSettings').workspaceId, null())]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', format('app-{0}', parameters('baseName')))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "siteName": {
+              "type": "string",
+              "value": "[format('app-{0}', parameters('baseName'))]"
+            }
+          }
+        }
+      }
+    }
+  ]
+}
